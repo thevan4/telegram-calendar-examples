@@ -12,7 +12,12 @@ gen:
 		       --go-grpc_opt=paths=source_relative \
 		       --grpc-gateway_out=$$out_dir \
 		       --grpc-gateway_opt=paths=source_relative,logtostderr=true,generate_unbound_methods=true \
-		       --openapiv2_out=$$out_dir \
-		       --openapiv2_opt=logtostderr=true \
+		       --openapiv2_out=./api/swagger \
+		       --openapiv2_opt=allow_merge=true,merge_file_name=telegram.calendar.json \
 		       $$file; \
 	done
+
+
+.PHONY: run
+run:
+	docker-compose -f deployments/docker-compose.yml up --build
