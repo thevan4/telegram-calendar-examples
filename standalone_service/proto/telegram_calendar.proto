@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package telegram.calendar;
+
+option go_package = "github.com/thevan4/telegram-calendar-examples/standalone_service/pkg/telegram-calendar;telegram_calendar";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+
+service CalendarService {
+  rpc GenerateCalendar (GenerateCalendarRequest) returns (GenerateCalendarResponse) {
+    option (google.api.http) = {
+      post: "/generate-calendar"
+      body: "*"
+    };
+  }
+
+  rpc GetSettings (google.protobuf.Empty) returns (GetSettingsResponse) {
+    option (google.api.http) = {
+      get: "/get-settings"
+    };
+  }
+
+  rpc ApplyNewSettings (NewSettingsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/apply-new-settings"
+      body: "*"
+    };
+  }
+}
+
+message GenerateCalendarRequest {
+  string callback_payload = 1; // A calendar payload that may be empty at first startup. The system automatically generates payloads in response. For example: 'calendar/prm_00.07.2023'.
+  google.protobuf.Timestamp current_time = 2; // Current time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request.
+}
+
+message GenerateCalendarResponse {
+  InlineKeyboardMarkup inline_keyboard_markup = 1; // A message that fully complies with the documentation https://core.telegram.org/bots/api reply_markup (InlineKeyboardMarkup)
+  optional google.protobuf.Timestamp selected_day = 2; //user-selected day (optional)
+}
+
+message InlineKeyboardMarkup {
+  message InlineKeyboardRow {
+    repeated InlineKeyboardButton buttons = 1;
+  }
+  message InlineKeyboardButton {
+    string text = 1;
+    string callback_data = 2;
+  }
+  repeated InlineKeyboardRow inline_keyboard = 1;
+}
+
+message GetSettingsResponse {
+  int64 years_back_for_choose = 1;
+  int64 years_forward_for_choose = 2;
+  int64 sum_years_for_choose = 3;
+  repeated string days_names = 4;
+  repeated string month_names = 5;
+  string home_button_for_beauty = 6;
+  string prefix_for_current_day = 7;
+  string postfix_for_current_day = 8;
+  string prefix_for_non_selected_day = 9;
+  string postfix_for_non_selected_day = 10;
+  string prefix_for_pick_day = 11;
+  string postfix_for_pick_day = 12;
+  google.protobuf.Timestamp unselectable_days_before_time = 13;
+  google.protobuf.Timestamp unselectable_days_after_time = 14;
+  map<string, google.protobuf.Empty> unselectable_days = 15;
+}
+
+message NewSettingsRequest {
+  // forced choice - this flag will set the default value (zero, zero date, empty string.
+  // Without this flag, null values will be ignored.
+
+  message YearsBackForChoose {
+    int64 years_back_for_choose = 1;
+    bool force_choice = 2;
+  }
+  message YearsForwardForChoose {
+    int64 years_forward_for_choose = 1;
+    bool force_choice = 2;
+  }
+  message DayNames {
+    repeated DayName day_names = 1; // if set, expect 7 days
+    bool force_choice = 2;
+  }
+  message DayName {
+    string day_name = 1;
+  }
+  message MonthNames {
+    repeated MonthName month_names = 1; // if set, expect 12 months
+    bool force_choice = 2;
+  }
+  message MonthName {
+    string month_name = 1;
+  }
+  message HomeButtonForBeauty {
+    string home_button_for_beauty = 1;
+    bool force_choice = 2;
+  }
+  message PrefixForCurrentDay {
+    string prefix_for_current_day = 1;
+    bool force_choice = 2;
+  }
+  message PostfixForCurrentDay {
+    string postfix_for_current_day = 1;
+    bool force_choice = 2;
+  }
+  message PrefixForNonSelectedDay {
+    string prefix_for_non_selected_day = 1;
+    bool force_choice = 2;
+  }
+  message PostfixForNonSelectedDay {
+    string postfix_for_non_selected_day = 1;
+    bool force_choice = 2;
+  }
+  message PrefixForPickDay {
+    string prefix_for_pick_day = 1;
+    bool force_choice = 2;
+  }
+  message PostfixForPickDay {
+    string postfix_for_pick_day = 1;
+    bool force_choice = 2;
+  }
+  message UnselectableDaysBeforeTime {
+    google.protobuf.Timestamp unselectable_days_before_time = 1;
+    bool force_choice = 2;
+  }
+  message UnselectableDaysAfterTime {
+    google.protobuf.Timestamp unselectable_days_after_time = 1;
+    bool force_choice = 2;
+  }
+  message UnselectableDays {
+    map<string, google.protobuf.Empty> unselectable_days = 1;
+    bool force_choice = 2;
+  }
+
+  YearsBackForChoose years_back_for_choose = 1;
+  YearsForwardForChoose years_forward_for_choose = 2;
+  DayNames day_names = 3;
+  MonthNames month_names = 4;
+  HomeButtonForBeauty home_button_for_beauty = 5;
+  PrefixForCurrentDay prefix_for_current_day = 6;
+  PostfixForCurrentDay postfix_for_current_day = 7;
+  PrefixForNonSelectedDay prefix_for_non_selected_day = 8;
+  PostfixForNonSelectedDay postfix_for_non_selected_day = 9;
+  PrefixForPickDay prefix_for_pick_day = 10;
+  PostfixForPickDay postfix_for_pick_day = 11;
+  UnselectableDaysBeforeTime unselectable_days_before_time = 12;
+  UnselectableDaysAfterTime unselectable_days_after_time = 13;
+  UnselectableDays unselectable_days = 14;
+}
