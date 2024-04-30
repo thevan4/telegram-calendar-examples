@@ -19,5 +19,9 @@ gen:
 
 
 .PHONY: run
-local-run:
-	docker-compose -f deployments/local_run/docker-compose.yml up --build
+build-and-run:
+	docker-compose -f deployments/build_and_run/docker-compose.yml up --build
+
+.PHONY: run
+docker-run:
+	docker-compose -f deployments/docker_hub_run/docker-compose.yml up --build
