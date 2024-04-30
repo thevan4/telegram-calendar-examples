@@ -1,0 +1,27 @@
+services:
+  telegram-calendar-service:
+    restart: unless-stopped
+    build:
+      context: ../..  # Points to the 2 directory above
+      dockerfile: build/package/Dockerfile
+    ports:
+      # "destination_out_container:source"
+      - "50051:50051" # Port for gRPC
+      - "8080:8080" # Port for HTTP
+    environment:
+      GRPC_PORT: "50051"
+      HTTP_PORT: "8080"
+      GRPC_DIAL_TIMEOUT: "1s"
+      HTTP_DIAL_TIMEOUT: "1s"
+      BEARER_TOKEN: "insecure_bearer" # needs to be changed. For grpc header "authorization", for http "Authorization" (it's just the way it is)
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    restart: unless-stopped
+    ports:
+      - "8081:8080" # swagger UI will be available at http://localhost:8081/swagger
+    volumes:
+      - ../../api/swagger:/usr/share/nginx/html/swagger
+    environment:
+      SWAGGER_JSON: /usr/share/nginx/html/swagger/telegram.calendar.swagger.json
+      BASE_URL: /swagger

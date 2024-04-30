@@ -145,7 +145,8 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/NewSettingsRequestDayName"
-          }
+          },
+          "title": "if set, expect 7 days"
         },
         "forceChoice": {
           "type": "boolean"
@@ -179,7 +180,8 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/NewSettingsRequestMonthName"
-          }
+          },
+          "title": "if set, expect 12 months"
         },
         "forceChoice": {
           "type": "boolean"

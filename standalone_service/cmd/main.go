@@ -19,99 +19,15 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var (
-	grpcPort        string
-	httpPort        string
-	grpcDialTimeout time.Duration
-	httpDialTimeout time.Duration
-)
-
-func init() {
-	log.SetFlags(0)
-	grpcPort = os.Getenv("GRPC_PORT")
-	if grpcPort == "" {
-		grpcPort = "50051"
-		logJSON("debug", "grpc port set default: 55555")
-	}
-
-	httpPort = os.Getenv("HTTP_PORT")
-	if httpPort == "" {
-		httpPort = "8080"
-		logJSON("debug", "http port set default: 55555")
-	}
-
-	var err error
-	grpcDialTimeoutRaw := os.Getenv("GRPC_DIAL_TIMEOUT")
-	if grpcDialTimeoutRaw == "" {
-		grpcDialTimeout = time.Second
-		logJSON("debug", "grpc dial timeout set default: 1s")
-	} else {
-		grpcDialTimeout, err = time.ParseDuration(grpcDialTimeoutRaw)
-		if err != nil {
-			grpcDialTimeout = time.Second
-			logJSON("warn", "grpc dial timeout set error: "+err.Error()+", set default: 1s")
-		} else {
-			logJSON("debug", "grpc dial timeout set: "+grpcDialTimeout.String())
-		}
-	}
-
-	httpDialTimeoutRaw := os.Getenv("HTTP_DIAL_TIMEOUT")
-	if httpDialTimeoutRaw == "" {
-		httpDialTimeout = time.Second
-		logJSON("debug", "http dial timeout set default: 1s")
-	} else {
-		httpDialTimeout, err = time.ParseDuration(httpDialTimeoutRaw)
-		if err != nil {
-			httpDialTimeout = time.Second
-			logJSON("warn", "http dial timeout set error: "+err.Error()+", set default: 1s")
-		} else {
-			logJSON("debug", "http dial timeout set: "+httpDialTimeout.String())
-		}
-	}
-}
-
 func main() {
 	ctx, cancelAtStart := context.WithCancel(context.Background())
 	defer cancelAtStart()
 
-	grpcServer := grpc.NewServer()
-	serviceGrpc := service.NewTelegramCalendarGRPCService()
-	pb.RegisterCalendarServiceServer(grpcServer, serviceGrpc)
-
+	// start servers
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
-
-	logJSON("info", "grpc starting at port "+grpcPort)
-	listerGrpc, errTCPListen := net.Listen("tcp", ":"+grpcPort)
-	if errTCPListen != nil {
-		logJSON("fatal", "failed to listen: "+errTCPListen.Error())
-	}
-	go func() {
-		go waitForServerReady(grpcPort, wg, grpcDialTimeout)
-		if errGrpcServe := grpcServer.Serve(listerGrpc); errGrpcServe != nil {
-			logJSON("fatal", "failed to serve gRPC: "+errGrpcServe.Error())
-		}
-	}()
-
-	logJSON("info", "http starting at port "+httpPort)
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-	if errPbRegister := pb.RegisterCalendarServiceHandlerFromEndpoint(ctx, mux, ":"+grpcPort, opts); errPbRegister != nil {
-		logJSON("fatal", "failed to register HTTP endpoint: "+errPbRegister.Error())
-	}
-	httpServer := &http.Server{
-		Addr:    ":" + httpPort,
-		Handler: mux,
-	}
-	go func() {
-		go waitForServerReady(httpPort, wg, httpDialTimeout)
-		if errHTTPServe := httpServer.ListenAndServe(); errHTTPServe != nil {
-			if !errors.Is(errHTTPServe, http.ErrServerClosed) {
-				logJSON("fatal", "failed to serve: "+errHTTPServe.Error())
-			}
-		}
-	}()
+	grpcServer := startGRPCServer(wg)
+	httpServer := startHTTPServer(ctx, wg)
 
 	wg.Wait()
 	logJSON("info", "gRPC (port "+grpcPort+") and HTTP (port "+httpPort+") servers are up and running")
@@ -143,6 +59,54 @@ func main() {
 		grpcServer.Stop()
 		logJSON("warn", "grpc server stopped")
 	}
+}
+
+func startGRPCServer(wg *sync.WaitGroup) *grpc.Server {
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(newGRPCAuthInterceptor()),
+	)
+	serviceGrpc := service.NewTelegramCalendarGRPCService()
+	pb.RegisterCalendarServiceServer(grpcServer, serviceGrpc)
+
+	logJSON("info", "grpc starting at port "+grpcPort)
+	listerGrpc, errTCPListen := net.Listen("tcp", ":"+grpcPort)
+	if errTCPListen != nil {
+		logJSON("fatal", "failed to listen: "+errTCPListen.Error())
+	}
+	go func() {
+		go waitForServerReady(grpcPort, wg, grpcDialTimeout)
+		if errGrpcServe := grpcServer.Serve(listerGrpc); errGrpcServe != nil {
+			logJSON("fatal", "failed to serve gRPC: "+errGrpcServe.Error())
+		}
+	}()
+
+	return grpcServer
+}
+
+func startHTTPServer(ctx context.Context, wg *sync.WaitGroup) *http.Server {
+	logJSON("info", "http starting at port "+httpPort)
+	httpMux := runtime.NewServeMux()
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	}
+
+	if errPbRegister := pb.RegisterCalendarServiceHandlerFromEndpoint(ctx, httpMux, ":"+grpcPort, opts); errPbRegister != nil {
+		logJSON("fatal", "failed to register HTTP endpoint: "+errPbRegister.Error())
+	}
+	httpServer := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: authHTTPInterceptor(httpMux),
+	}
+	go func() {
+		go waitForServerReady(httpPort, wg, httpDialTimeout)
+		if errHTTPServe := httpServer.ListenAndServe(); errHTTPServe != nil {
+			if !errors.Is(errHTTPServe, http.ErrServerClosed) {
+				logJSON("fatal", "failed to serve: "+errHTTPServe.Error())
+			}
+		}
+	}()
+
+	return httpServer
 }
 
 func waitForServerReady(port string, wg *sync.WaitGroup, dialTime time.Duration) {

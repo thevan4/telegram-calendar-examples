@@ -707,7 +707,7 @@ type NewSettingsRequest_DayNames struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DayNames    []*NewSettingsRequest_DayName `protobuf:"bytes,1,rep,name=day_names,json=dayNames,proto3" json:"day_names,omitempty"`
+	DayNames    []*NewSettingsRequest_DayName `protobuf:"bytes,1,rep,name=day_names,json=dayNames,proto3" json:"day_names,omitempty"` // if set, expect 7 days
 	ForceChoice bool                          `protobuf:"varint,2,opt,name=force_choice,json=forceChoice,proto3" json:"force_choice,omitempty"`
 }
 
@@ -809,7 +809,7 @@ type NewSettingsRequest_MonthNames struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MonthNames  []*NewSettingsRequest_MonthName `protobuf:"bytes,1,rep,name=month_names,json=monthNames,proto3" json:"month_names,omitempty"`
+	MonthNames  []*NewSettingsRequest_MonthName `protobuf:"bytes,1,rep,name=month_names,json=monthNames,proto3" json:"month_names,omitempty"` // if set, expect 12 months
 	ForceChoice bool                            `protobuf:"varint,2,opt,name=force_choice,json=forceChoice,proto3" json:"force_choice,omitempty"`
 }
 
