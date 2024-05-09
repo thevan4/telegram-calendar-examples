@@ -38,7 +38,8 @@ message GenerateCalendarRequest {
 
 message GenerateCalendarResponse {
   InlineKeyboardMarkup inline_keyboard_markup = 1; // A message that fully complies with the documentation https://core.telegram.org/bots/api reply_markup (InlineKeyboardMarkup)
-  optional google.protobuf.Timestamp selected_day = 2; //user-selected day (optional)
+  optional google.protobuf.Timestamp selected_day = 2; // User-selected day
+  optional bool is_unselectable_day = 3; // Shows if the selected day was unavailable for selection
 }
 
 message InlineKeyboardMarkup {
