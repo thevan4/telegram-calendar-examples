@@ -19,14 +19,13 @@ var (
 )
 
 func mapGenerateCalendarKeyboardToResponse(
-	inlineKeyboardMarkup models.InlineKeyboardMarkup,
-	selectedDay time.Time,
+	generatedCalendarKeyboard models.GenerateCalendarKeyboardResponse,
 ) *telegramCalendarPb.GenerateCalendarResponse {
 	// mapping InlineKeyboardMarkup
 	inlineKeyboardMarkupResponse := &telegramCalendarPb.InlineKeyboardMarkup{
-		InlineKeyboard: make([]*telegramCalendarPb.InlineKeyboardMarkup_InlineKeyboardRow, len(inlineKeyboardMarkup.InlineKeyboard)),
+		InlineKeyboard: make([]*telegramCalendarPb.InlineKeyboardMarkup_InlineKeyboardRow, len(generatedCalendarKeyboard.InlineKeyboardMarkup.InlineKeyboard)),
 	}
-	for i, row := range inlineKeyboardMarkup.InlineKeyboard {
+	for i, row := range generatedCalendarKeyboard.InlineKeyboardMarkup.InlineKeyboard {
 		convertedRow := &telegramCalendarPb.InlineKeyboardMarkup_InlineKeyboardRow{
 			Buttons: make([]*telegramCalendarPb.InlineKeyboardMarkup_InlineKeyboardButton, len(row)),
 		}
@@ -40,11 +39,15 @@ func mapGenerateCalendarKeyboardToResponse(
 		inlineKeyboardMarkupResponse.InlineKeyboard[i] = convertedRow
 	}
 
+	isUnselectableDay := generatedCalendarKeyboard.IsUnselectableDay
 	// mapping result
-	result := &telegramCalendarPb.GenerateCalendarResponse{InlineKeyboardMarkup: inlineKeyboardMarkupResponse}
+	result := &telegramCalendarPb.GenerateCalendarResponse{
+		InlineKeyboardMarkup: inlineKeyboardMarkupResponse,
+		IsUnselectableDay:    &isUnselectableDay,
+	}
 
-	if !selectedDay.IsZero() {
-		result.SelectedDay = timestamppb.New(selectedDay)
+	if !generatedCalendarKeyboard.SelectedDay.IsZero() {
+		result.SelectedDay = timestamppb.New(generatedCalendarKeyboard.SelectedDay)
 	}
 
 	return result

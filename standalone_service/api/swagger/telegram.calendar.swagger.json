@@ -341,7 +341,11 @@
         "selectedDay": {
           "type": "string",
           "format": "date-time",
-          "title": "user-selected day (optional)"
+          "title": "User-selected day"
+        },
+        "isUnselectableDay": {
+          "type": "boolean",
+          "title": "Shows if the selected day was unavailable for selection"
         }
       }
     },

@@ -15,50 +15,58 @@ import (
 func TestMapGenerateCalendarKeyboardToResponse(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		inlineKeyboard models.InlineKeyboardMarkup
-		selectedDay    time.Time
+		generateCalendarKeyboardResponse models.GenerateCalendarKeyboardResponse
 	}
 	tests := []struct {
-		name             string
-		args             args
-		wantText         string
-		wantCallbackData string
-		wantSelectedDay  *timestamppb.Timestamp
-		wantErr          bool
+		name                  string
+		args                  args
+		wantText              string
+		wantCallbackData      string
+		wantSelectedDay       *timestamppb.Timestamp
+		wantIsUnselectableDay bool
+		wantErr               bool
 	}{
 		{
 			name: "valid data",
 			args: args{
-				inlineKeyboard: models.InlineKeyboardMarkup{
-					InlineKeyboard: [][]models.InlineKeyboardButton{
-						{
-							{Text: "button1", CallbackData: "data1"},
+				generateCalendarKeyboardResponse: models.GenerateCalendarKeyboardResponse{
+					InlineKeyboardMarkup: models.InlineKeyboardMarkup{
+						InlineKeyboard: [][]models.InlineKeyboardButton{
+							{
+								{Text: "button1", CallbackData: "data1"},
+							},
 						},
 					},
+					SelectedDay:       time.Date(2022, 10, 5, 0, 0, 0, 0, time.UTC),
+					IsUnselectableDay: true,
 				},
-				selectedDay: time.Date(2022, 10, 5, 0, 0, 0, 0, time.UTC),
 			},
-			wantText:         "button1",
-			wantCallbackData: "data1",
-			wantSelectedDay:  timestamppb.New(time.Date(2022, 10, 5, 0, 0, 0, 0, time.UTC)),
-			wantErr:          false,
+			wantText:              "button1",
+			wantCallbackData:      "data1",
+			wantSelectedDay:       timestamppb.New(time.Date(2022, 10, 5, 0, 0, 0, 0, time.UTC)),
+			wantIsUnselectableDay: true,
+			wantErr:               false,
 		},
 		{
 			name: "zero day",
 			args: args{
-				inlineKeyboard: models.InlineKeyboardMarkup{
-					InlineKeyboard: [][]models.InlineKeyboardButton{
-						{
-							{Text: "button1", CallbackData: "data1"},
+				generateCalendarKeyboardResponse: models.GenerateCalendarKeyboardResponse{
+					InlineKeyboardMarkup: models.InlineKeyboardMarkup{
+						InlineKeyboard: [][]models.InlineKeyboardButton{
+							{
+								{Text: "button1", CallbackData: "data1"},
+							},
 						},
 					},
+					SelectedDay:       time.Time{},
+					IsUnselectableDay: false,
 				},
-				selectedDay: time.Time{},
 			},
-			wantText:         "button1",
-			wantCallbackData: "data1",
-			wantSelectedDay:  nil,
-			wantErr:          false,
+			wantText:              "button1",
+			wantCallbackData:      "data1",
+			wantSelectedDay:       nil,
+			wantErr:               false,
+			wantIsUnselectableDay: false,
 		},
 	}
 
@@ -66,7 +74,7 @@ func TestMapGenerateCalendarKeyboardToResponse(t *testing.T) {
 		tt := tmpTT
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			response := mapGenerateCalendarKeyboardToResponse(tt.args.inlineKeyboard, tt.args.selectedDay)
+			response := mapGenerateCalendarKeyboardToResponse(tt.args.generateCalendarKeyboardResponse)
 
 			assert.NotNil(t, response)
 			assert.Equal(t, tt.wantText, response.InlineKeyboardMarkup.InlineKeyboard[0].Buttons[0].Text)
@@ -76,6 +84,10 @@ func TestMapGenerateCalendarKeyboardToResponse(t *testing.T) {
 				assert.Equal(t, tt.wantSelectedDay, response.SelectedDay, "selected date does not match the expected date")
 			} else {
 				assert.Nil(t, response.SelectedDay, "the selected date must be nil when the date is zero")
+			}
+			if tt.wantIsUnselectableDay != tt.args.generateCalendarKeyboardResponse.IsUnselectableDay {
+				assert.Equal(t, tt.wantIsUnselectableDay, tt.args.generateCalendarKeyboardResponse.IsUnselectableDay,
+					"unselectable day flag does not match the expected state")
 			}
 		})
 	}
