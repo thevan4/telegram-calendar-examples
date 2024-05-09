@@ -20,9 +20,13 @@ type ClientWrapper struct {
 
 // MustNewClient ...
 func MustNewClient(botToken string, options ...telego.BotOption) *ClientWrapper {
+	if botToken == "" {
+		log.Panic("at MustNewClient bot: token for the bot is not set: check your environment variables")
+	}
+
 	bot, err := telego.NewBot(botToken, options...)
 	if err != nil {
-		log.Panicf("at MustNewClient: %v", err)
+		log.Panicf("at MustNewClient at NewBot: %v", err)
 	}
 	return &ClientWrapper{
 		Bot: bot,
