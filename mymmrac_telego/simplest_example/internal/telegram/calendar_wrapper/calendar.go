@@ -45,7 +45,7 @@ func NewCallbackQueryForCalendarWrapper() *CallbackQueryForCalendarWrapper {
 func (cw *CallbackQueryForCalendarWrapper) AtNextMidnightChangeUnselectableDaysBeforeDate(currentDate time.Time) {
 	nextMidnight := time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day()+1, 0, 0, 0, 0, currentDate.Location())
 	duration := nextMidnight.Sub(currentDate)
-	log.Printf("currentDate %v, nextMidnight %v, duration %v", currentDate, nextMidnight, duration)
+
 	go time.AfterFunc(duration, func() {
 		prevDay := time.Date(nextMidnight.Year(), nextMidnight.Month(), nextMidnight.Day()-1, 0, 0, 0, 0, nextMidnight.Location())
 		cw.calendarManager.ApplyNewOptions(generator.ApplyNewOptionsForButtonsTextWrapper(
@@ -59,7 +59,7 @@ func (cw *CallbackQueryForCalendarWrapper) AtNextMidnightChangeUnselectableDaysB
 // CallbackQueryForCalendar ...
 func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.Bot, query telego.CallbackQuery) {
 	// For real use, it is better to throw the necessary timezone (your local one, take from the user from the database, etc.)
-	now := time.Now()
+	now := time.Now() // FIXME drop time?
 	tn := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	generateCalendarKeyboardResponse := cw.calendarManager.GenerateCalendarKeyboard(query.Data, tn)
@@ -96,7 +96,9 @@ func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.
 	// The day was chosen and it was available for selection.
 	b, err := json.Marshal(generateCalendarKeyboardResponse.InlineKeyboardMarkup)
 	if err != nil {
-		log.Fatalf("at CallbackQueryForCalendar json.Marshal(resp) error: %v", err)
+		// Need some metric/alert here!
+		log.Printf("at CallbackQueryForCalendar json.Marshal(resp) error: %v", err)
+		return
 	}
 
 	replyKeyboard := new(telego.InlineKeyboardMarkup)

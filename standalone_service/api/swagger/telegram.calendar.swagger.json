@@ -274,7 +274,7 @@
       "properties": {
         "unselectableDaysAfterTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "forceChoice": {
           "type": "boolean"
@@ -286,7 +286,7 @@
       "properties": {
         "unselectableDaysBeforeTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "forceChoice": {
           "type": "boolean"
@@ -399,11 +399,11 @@
         },
         "unselectableDaysBeforeTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "unselectableDaysAfterTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "unselectableDays": {
           "type": "object",
