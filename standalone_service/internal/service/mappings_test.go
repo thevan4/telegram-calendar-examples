@@ -141,8 +141,8 @@ func TestMapCurrentConfigToResponse(t *testing.T) {
 				PostfixForNonSelectedDay:   ":N",
 				PrefixForPickDay:           "P:",
 				PostfixForPickDay:          ":P",
-				UnselectableDaysBeforeTime: timestamppb.New(now),
-				UnselectableDaysAfterTime:  timestamppb.New(now.Add(24 * time.Hour)),
+				UnselectableDaysBeforeTime: now.Format(time.RFC3339),
+				UnselectableDaysAfterTime:  now.Add(24 * time.Hour).Format(time.RFC3339),
 				UnselectableDays:           convertTimeMapToProtoMap(map[time.Time]struct{}{now: {}}),
 			},
 		},
@@ -244,15 +244,15 @@ func TestMapToConfigCallbacks(t *testing.T) {
 			wantLen: 0,
 		},
 		{
-			name: "Unix epoch time with ForceChoice true",
+			name: "Force for UnselectableDaysBeforeTime",
 			args: args{
 				req: &telegramCalendarPb.NewSettingsRequest{
 					UnselectableDaysBeforeTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysBeforeTime{
-						UnselectableDaysBeforeTime: &timestamppb.Timestamp{Seconds: unixEpochTime.Unix()},
+						UnselectableDaysBeforeTime: "",
 						ForceChoice:                true,
 					},
 					UnselectableDaysAfterTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysAfterTime{
-						UnselectableDaysAfterTime: &timestamppb.Timestamp{Seconds: unixEpochTime.Unix()},
+						UnselectableDaysAfterTime: "",
 						ForceChoice:               false,
 					},
 				},
@@ -261,15 +261,15 @@ func TestMapToConfigCallbacks(t *testing.T) {
 			wantLen: 1,
 		},
 		{
-			name: "Protobuf default time with ForceChoice true",
+			name: "Force for UnselectableDaysAfterTime",
 			args: args{
 				req: &telegramCalendarPb.NewSettingsRequest{
 					UnselectableDaysBeforeTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysBeforeTime{
-						UnselectableDaysBeforeTime: &timestamppb.Timestamp{Seconds: unixEpochTime.Unix()},
+						UnselectableDaysBeforeTime: "",
 						ForceChoice:                false,
 					},
 					UnselectableDaysAfterTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysAfterTime{
-						UnselectableDaysAfterTime: &timestamppb.Timestamp{Seconds: unixEpochTime.Unix()},
+						UnselectableDaysAfterTime: "",
 						ForceChoice:               true,
 					},
 				},
@@ -366,16 +366,16 @@ func TestMapToConfigCallbacks(t *testing.T) {
 					},
 					UnselectableDaysBeforeTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysBeforeTime{
 						ForceChoice:                false,
-						UnselectableDaysBeforeTime: timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+						UnselectableDaysBeforeTime: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 					},
 					UnselectableDaysAfterTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysAfterTime{
 						ForceChoice:               false,
-						UnselectableDaysAfterTime: timestamppb.New(time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)),
+						UnselectableDaysAfterTime: time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 					},
 					UnselectableDays: &telegramCalendarPb.NewSettingsRequest_UnselectableDays{
 						ForceChoice: false,
 						UnselectableDays: map[string]*emptypb.Empty{
-							`2024-01-02T00:00:00.00Z`: {}},
+							time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC).Format(time.RFC3339): {}},
 					},
 				},
 			},

@@ -15,8 +15,8 @@ github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/thevan4/telegram-calendar v0.0.0-20240508172553-4369a861e05b h1:qgZKe4YCCDOp8afdHM4EPxLrJCIKq6dHUFeZNBiJ0HQ=
-github.com/thevan4/telegram-calendar v0.0.0-20240508172553-4369a861e05b/go.mod h1:W2XZ7uOigYoDKQeBG11X3BiHDMpt9feun1c72WKooGU=
+github.com/thevan4/telegram-calendar v0.0.0-20240510103314-0f972ef55608 h1:m8Fmv6WldC3eAmpslLJcG0//YVjGdHoIgziajBOr7v0=
+github.com/thevan4/telegram-calendar v0.0.0-20240510103314-0f972ef55608/go.mod h1:W2XZ7uOigYoDKQeBG11X3BiHDMpt9feun1c72WKooGU=
 golang.org/x/net v0.21.0 h1:AQyQV4dYCvJ7vGmJyKki9+PBdyvhkSd8EIx/qb0AYv4=
 golang.org/x/net v0.21.0/go.mod h1:bIjVDfnllIU7BJ2DNgfnXvpSvtn8VRwhlsaeUTyUS44=
 golang.org/x/sys v0.17.0 h1:25cE3gD+tdBA7lp7QfhuV+rJiE9YXTcS3VG1SqssI/Y=

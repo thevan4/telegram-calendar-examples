@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/stretchr/testify v1.9.0
-	github.com/thevan4/telegram-calendar v0.0.0-20240508172553-4369a861e05b
+	github.com/thevan4/telegram-calendar v0.0.0-20240510103314-0f972ef55608
 	google.golang.org/genproto/googleapis/api v0.0.0-20240429193739-8cf5692501f6
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0

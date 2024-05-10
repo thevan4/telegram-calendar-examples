@@ -33,7 +33,8 @@ service CalendarService {
 
 message GenerateCalendarRequest {
   string callback_payload = 1; // A calendar payload that may be empty at first startup. The system automatically generates payloads in response. For example: 'calendar/prm_00.07.2023'.
-  google.protobuf.Timestamp current_time = 2; // Current time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request.
+  // RFC3339.
+  string current_time = 2; // Current time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request.
 }
 
 message GenerateCalendarResponse {
@@ -66,8 +67,10 @@ message GetSettingsResponse {
   string postfix_for_non_selected_day = 10;
   string prefix_for_pick_day = 11;
   string postfix_for_pick_day = 12;
-  google.protobuf.Timestamp unselectable_days_before_time = 13;
-  google.protobuf.Timestamp unselectable_days_after_time = 14;
+  // RFC3339.
+  string unselectable_days_before_time = 13;
+  // RFC3339.
+  string unselectable_days_after_time = 14;
   map<string, google.protobuf.Empty> unselectable_days = 15;
 }
 
@@ -126,11 +129,13 @@ message NewSettingsRequest {
     bool force_choice = 2;
   }
   message UnselectableDaysBeforeTime {
-    google.protobuf.Timestamp unselectable_days_before_time = 1;
+    // RFC3339.
+    string unselectable_days_before_time = 1;
     bool force_choice = 2;
   }
   message UnselectableDaysAfterTime {
-    google.protobuf.Timestamp unselectable_days_after_time = 1;
+    // RFC3339.
+    string unselectable_days_after_time = 1;
     bool force_choice = 2;
   }
   message UnselectableDays {

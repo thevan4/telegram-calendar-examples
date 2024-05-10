@@ -274,7 +274,7 @@
       "properties": {
         "unselectableDaysAfterTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "forceChoice": {
           "type": "boolean"
@@ -286,7 +286,7 @@
       "properties": {
         "unselectableDaysBeforeTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "forceChoice": {
           "type": "boolean"
@@ -326,8 +326,7 @@
         },
         "currentTime": {
           "type": "string",
-          "format": "date-time",
-          "description": "Current time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request."
+          "description": "RFC3339.\n\nCurrent time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request."
         }
       }
     },
@@ -399,11 +398,11 @@
         },
         "unselectableDaysBeforeTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "unselectableDaysAfterTime": {
           "type": "string",
-          "format": "date-time"
+          "description": "RFC3339."
         },
         "unselectableDays": {
           "type": "object",

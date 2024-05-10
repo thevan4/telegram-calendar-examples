@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func bufDialer(listener *bufconn.Listener) func(context.Context, string) (net.Conn, error) {
@@ -70,8 +69,8 @@ func TestGrpcServerAndClient(t *testing.T) {
 		PostfixForNonSelectedDay:   "❌",
 		PrefixForPickDay:           "",
 		PostfixForPickDay:          "",
-		UnselectableDaysBeforeTime: timestamppb.New(time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)),
-		UnselectableDaysAfterTime:  timestamppb.New(time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC)),
+		UnselectableDaysBeforeTime: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
+		UnselectableDaysAfterTime:  time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 		UnselectableDays:           map[string]*emptypb.Empty{},
 	}
 
@@ -145,11 +144,11 @@ func TestGrpcServerAndClient(t *testing.T) {
 		},
 		UnselectableDaysBeforeTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysBeforeTime{
 			ForceChoice:                false,
-			UnselectableDaysBeforeTime: timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
+			UnselectableDaysBeforeTime: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 		},
 		UnselectableDaysAfterTime: &telegramCalendarPb.NewSettingsRequest_UnselectableDaysAfterTime{
 			ForceChoice:               false,
-			UnselectableDaysAfterTime: timestamppb.New(time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)),
+			UnselectableDaysAfterTime: time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 		},
 		UnselectableDays: &telegramCalendarPb.NewSettingsRequest_UnselectableDays{
 			ForceChoice: false,
@@ -183,9 +182,11 @@ func TestGrpcServerAndClient(t *testing.T) {
 		PostfixForNonSelectedDay:   ":N",
 		PrefixForPickDay:           "P:",
 		PostfixForPickDay:          ":P",
-		UnselectableDaysBeforeTime: timestamppb.New(time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)),
-		UnselectableDaysAfterTime:  timestamppb.New(time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)),
-		UnselectableDays:           map[string]*emptypb.Empty{`2024-01-02T00:00:00Z`: {}},
+		UnselectableDaysBeforeTime: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
+		UnselectableDaysAfterTime:  time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
+		UnselectableDays: map[string]*emptypb.Empty{
+			time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC).Format(time.RFC3339): {},
+		},
 	}
 
 	gotCustomJson, errGotCustomJsonMarshal := json.Marshal(customConfig)
@@ -207,7 +208,7 @@ func testGenerateCalendar(ctx context.Context, t *testing.T, client telegramCale
 
 	firstGenResponse, errFirstGenResponse := client.GenerateCalendar(ctx, &telegramCalendarPb.GenerateCalendarRequest{
 		CallbackPayload: "",
-		CurrentTime:     timestamppb.New(curTime),
+		CurrentTime:     curTime.Format(time.RFC3339),
 	})
 	if errFirstGenResponse != nil {
 		t.Fatalf("GenerateCalendar witn empty CallbackPayload and mock currents time %v error: %v", curTime, errFirstGenResponse)

@@ -13,11 +13,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var (
-	defaultProtoTime = time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)
-	unixEpochTime    = time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
-)
-
 func mapGenerateCalendarKeyboardToResponse(
 	generatedCalendarKeyboard models.GenerateCalendarKeyboardResponse,
 ) *telegramCalendarPb.GenerateCalendarResponse {
@@ -67,8 +62,8 @@ func mapCurrentConfigToResponse(currentConfig calendarManager.FlatConfig) *teleg
 		PostfixForNonSelectedDay:   currentConfig.PostfixForNonSelectedDay,
 		PrefixForPickDay:           currentConfig.PrefixForPickDay,
 		PostfixForPickDay:          currentConfig.PostfixForPickDay,
-		UnselectableDaysBeforeTime: timestamppb.New(currentConfig.UnselectableDaysBeforeTime),
-		UnselectableDaysAfterTime:  timestamppb.New(currentConfig.UnselectableDaysAfterTime),
+		UnselectableDaysBeforeTime: currentConfig.UnselectableDaysBeforeTime.Format(time.RFC3339),
+		UnselectableDaysAfterTime:  currentConfig.UnselectableDaysAfterTime.Format(time.RFC3339),
 		UnselectableDays:           convertTimeMapToProtoMap(currentConfig.UnselectableDays),
 	}
 
@@ -83,6 +78,9 @@ func convertTimeMapToProtoMap(tm map[time.Time]struct{}) map[string]*emptypb.Emp
 	return protoMap
 }
 
+// A better approach is to take all conversions to the layer above, and perform the conversion from the transport layer
+// to the domain layer together with the request validation.
+// But it's an additional cost, that's why it's fine for now.
 func mapToConfigCallbacks(
 	req *telegramCalendarPb.NewSettingsRequest,
 ) (resultCallbacks []func(calendarGenerator.KeyboardGenerator) calendarGenerator.KeyboardGenerator, err error) {
@@ -201,9 +199,16 @@ func mapToConfigCallbacks(
 		)
 	}
 
-	unselectableDaysBeforeTime := req.GetUnselectableDaysBeforeTime().GetUnselectableDaysBeforeTime().AsTime()
+	var unselectableDaysBeforeTime time.Time
+	var errParseDBT error
+	if req.GetUnselectableDaysBeforeTime().GetUnselectableDaysBeforeTime() != "" {
+		unselectableDaysBeforeTime, errParseDBT = time.Parse(time.RFC3339, req.GetUnselectableDaysBeforeTime().GetUnselectableDaysBeforeTime())
+		if errParseDBT != nil {
+			return resultCallbacks, fmt.Errorf("parse unselectable days before time error: %v", errParseDBT)
+		}
+	}
 	if req.GetUnselectableDaysBeforeTime().GetForceChoice() ||
-		(unselectableDaysBeforeTime != defaultProtoTime && unselectableDaysBeforeTime != unixEpochTime && !unselectableDaysBeforeTime.IsZero()) {
+		!unselectableDaysBeforeTime.IsZero() {
 		resultCallbacks = append(resultCallbacks,
 			calendarGenerator.ApplyNewOptionsForButtonsTextWrapper(
 				telegramDayButtonFormer.ChangeUnselectableDaysBeforeDate(unselectableDaysBeforeTime),
@@ -211,9 +216,17 @@ func mapToConfigCallbacks(
 		)
 	}
 
-	unselectableDaysAfterTime := req.GetUnselectableDaysAfterTime().GetUnselectableDaysAfterTime().AsTime()
+	var unselectableDaysAfterTime time.Time
+	var errParseDAT error
+	if req.GetUnselectableDaysAfterTime().GetUnselectableDaysAfterTime() != "" {
+		unselectableDaysAfterTime, errParseDAT = time.Parse(time.RFC3339, req.GetUnselectableDaysAfterTime().GetUnselectableDaysAfterTime())
+		if errParseDAT != nil {
+			return resultCallbacks, fmt.Errorf("parse unselectable days before time error: %v", errParseDAT)
+		}
+	}
+
 	if req.GetUnselectableDaysAfterTime().GetForceChoice() ||
-		(unselectableDaysAfterTime != defaultProtoTime && unselectableDaysAfterTime != unixEpochTime && !unselectableDaysAfterTime.IsZero()) {
+		!unselectableDaysAfterTime.IsZero() {
 		resultCallbacks = append(resultCallbacks,
 			calendarGenerator.ApplyNewOptionsForButtonsTextWrapper(
 				telegramDayButtonFormer.ChangeUnselectableDaysAfterDate(unselectableDaysAfterTime),
