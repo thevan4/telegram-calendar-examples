@@ -58,11 +58,8 @@ func (cw *CallbackQueryForCalendarWrapper) AtNextMidnightChangeUnselectableDaysB
 
 // CallbackQueryForCalendar ...
 func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.Bot, query telego.CallbackQuery) {
-	// For real use, it is better to throw the necessary timezone (your local one, take from the user from the database, etc.)
-	now := time.Now() // FIXME drop time?
-	tn := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-	generateCalendarKeyboardResponse := cw.calendarManager.GenerateCalendarKeyboard(query.Data, tn)
+	now := time.Now()
+	generateCalendarKeyboardResponse := cw.calendarManager.GenerateCalendarKeyboard(query.Data, now)
 
 	// There may be additional processing logic
 	if generateCalendarKeyboardResponse.IsUnselectableDay {
