@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	telegramCalendarPb "github.com/thevan4/telegram-calendar-examples/standalone_service/pkg/telegram-calendar"
 	calendarManager "github.com/thevan4/telegram-calendar/manager"
@@ -26,8 +28,12 @@ func (g *TelegramCalendarGRPCService) GenerateCalendar(
 	_ context.Context,
 	req *telegramCalendarPb.GenerateCalendarRequest,
 ) (*telegramCalendarPb.GenerateCalendarResponse, error) {
+	currentTime, err := time.Parse(time.RFC3339, req.GetCurrentTime())
+	if err != nil {
+		return new(telegramCalendarPb.GenerateCalendarResponse), fmt.Errorf("parse current time error: %v", err)
+	}
 	return mapGenerateCalendarKeyboardToResponse(
-		g.calendarManager.GenerateCalendarKeyboard(req.GetCallbackPayload(), req.GetCurrentTime().AsTime()),
+		g.calendarManager.GenerateCalendarKeyboard(req.GetCallbackPayload(), currentTime),
 	), nil
 }
 

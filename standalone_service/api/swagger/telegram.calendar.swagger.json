@@ -326,8 +326,7 @@
         },
         "currentTime": {
           "type": "string",
-          "format": "date-time",
-          "description": "Current time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request."
+          "description": "RFC3339.\n\nCurrent time with timezone. In case of any errors (incorrect payload, internal failure, etc.) the calendar is generated for the date specified by the current date in the request."
         }
       }
     },
