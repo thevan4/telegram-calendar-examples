@@ -6,4 +6,5 @@ There are too many interesting libraries that you just want to take and start us
 # Examples
 
 - [Working as a separate http/grpc microservice](https://github.com/thevan4/telegram-calendar-examples/tree/main/standalone_service)
-
+- [Simple example for telego](https://github.com/thevan4/telegram-calendar-examples/tree/main/mymmrac_telego/simplest_example)
+- [Example for telego with separate microservice](https://github.com/thevan4/telegram-calendar-examples/tree/main/mymmrac_telego/with_standalone_service_example)
