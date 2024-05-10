@@ -6,14 +6,12 @@ import (
 	"log"
 	"time"
 
+	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
 	"github.com/thevan4/telegram-calendar-examples/mymmrac_telego/simplest_example/internal/telegram/utils"
 	pb "github.com/thevan4/telegram-calendar-examples/mymmrac_telego/simplest_example/pkg/telegram-calendar/telegram-calendar-examples/standalone_service" //nolint:lll // ok
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"github.com/mymmrac/telego"
 )
 
 // CallbackQueryForCalendarWrapper ...
@@ -55,13 +53,15 @@ func MustNewCallbackQueryForCalendarWrapper(ctx context.Context, calendarStandal
 				YearsBackForChoose: 0,
 				ForceChoice:        true,
 			},
-			YearsForwardForChoose:      &pb.NewSettingsRequest_YearsForwardForChoose{YearsForwardForChoose: 2},
-			HomeButtonForBeauty:        &pb.NewSettingsRequest_HomeButtonForBeauty{HomeButtonForBeauty: "✈️"},
-			PostfixForCurrentDay:       &pb.NewSettingsRequest_PostfixForCurrentDay{PostfixForCurrentDay: "🗓"},
-			UnselectableDaysBeforeTime: &pb.NewSettingsRequest_UnselectableDaysBeforeTime{UnselectableDaysBeforeTime: timestamppb.New(prevDay)},
+			YearsForwardForChoose: &pb.NewSettingsRequest_YearsForwardForChoose{YearsForwardForChoose: 2},
+			HomeButtonForBeauty:   &pb.NewSettingsRequest_HomeButtonForBeauty{HomeButtonForBeauty: "✈️"},
+			PostfixForCurrentDay:  &pb.NewSettingsRequest_PostfixForCurrentDay{PostfixForCurrentDay: "🗓"},
+			UnselectableDaysBeforeTime: &pb.NewSettingsRequest_UnselectableDaysBeforeTime{
+				UnselectableDaysBeforeTime: prevDay.Format(time.RFC3339),
+			},
 			UnselectableDays: &pb.NewSettingsRequest_UnselectableDays{
 				UnselectableDays: nil,
-				ForceChoice:      false,
+				ForceChoice:      true,
 			},
 		},
 	)
@@ -85,7 +85,7 @@ func (cw *CallbackQueryForCalendarWrapper) AtNextMidnightChangeUnselectableDaysB
 		prevDay := time.Date(nextMidnight.Year(), nextMidnight.Month(), nextMidnight.Day()-1, 0, 0, 0, 0, nextMidnight.Location())
 		if _, err := cw.calendarManagerClient.ApplyNewSettings(context.Background(), &pb.NewSettingsRequest{
 			UnselectableDaysBeforeTime: &pb.NewSettingsRequest_UnselectableDaysBeforeTime{
-				UnselectableDaysBeforeTime: timestamppb.New(prevDay),
+				UnselectableDaysBeforeTime: prevDay.Format(time.RFC3339),
 			},
 		}); err != nil {
 			// Retry logic looks good here.
@@ -98,15 +98,14 @@ func (cw *CallbackQueryForCalendarWrapper) AtNextMidnightChangeUnselectableDaysB
 
 // CallbackQueryForCalendar ...
 func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.Bot, query telego.CallbackQuery) {
-	tn := time.Now() // FIXME drop time?
-
+	tn := time.Now()
 	ctx, cancel := context.WithTimeout(cw.globalCTX, time.Second)
 	defer cancel()
 
 	generateCalendarKeyboardResponse, errGenerate := cw.calendarManagerClient.GenerateCalendar(ctx,
 		&pb.GenerateCalendarRequest{
 			CallbackPayload: query.Data,
-			CurrentTime:     timestamppb.New(tn),
+			CurrentTime:     tn.Format(time.RFC3339),
 		},
 	)
 	if errGenerate != nil {
