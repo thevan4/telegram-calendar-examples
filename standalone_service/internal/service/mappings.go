@@ -256,7 +256,7 @@ func mapToConfigCallbacks(
 	if req.GetTimezone().GetTimezone() != "" {
 		newTimezone, errParseTimezone = time.LoadLocation(req.GetTimezone().GetTimezone())
 		if errParseTimezone != nil {
-			return resultCallbacks, fmt.Errorf("parse new timezone error: %v", errParseDAT)
+			return resultCallbacks, fmt.Errorf("parse new timezone error: %v", errParseTimezone)
 		}
 	}
 
