@@ -44,7 +44,12 @@ func MustNewClientForStandaloneService(ctx context.Context, addr string) pb.Cale
 // MustNewCallbackQueryForCalendarWrapper ...
 func MustNewCallbackQueryForCalendarWrapper(ctx context.Context, calendarStandaloneServiceAddr string) *CallbackQueryForCalendarWrapper {
 	cmcl := MustNewClientForStandaloneService(ctx, calendarStandaloneServiceAddr)
-	tn := time.Now()
+	// Bug with timezone definition locally, it is defined as "local", which does not comply with the IANA standard.
+	tz, errParseTimezone := time.LoadLocation("Etc/GMT-3")
+	if errParseTimezone != nil {
+		log.Fatalf("parse new timezone error: %v", errParseTimezone)
+	}
+	tn := time.Now().In(tz)
 	prevDay := tn.AddDate(0, 0, -1)
 
 	_, err := cmcl.ApplyNewSettings(ctx,
@@ -63,6 +68,7 @@ func MustNewCallbackQueryForCalendarWrapper(ctx context.Context, calendarStandal
 				UnselectableDays: nil,
 				ForceChoice:      true,
 			},
+			Timezone: &pb.NewSettingsRequest_Timezone{Timezone: tn.Location().String()},
 		},
 	)
 	if err != nil {
