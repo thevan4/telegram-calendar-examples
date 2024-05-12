@@ -65,6 +65,7 @@ func mapCurrentConfigToResponse(currentConfig calendarManager.FlatConfig) *teleg
 		UnselectableDaysBeforeTime: currentConfig.UnselectableDaysBeforeTime.Format(time.RFC3339),
 		UnselectableDaysAfterTime:  currentConfig.UnselectableDaysAfterTime.Format(time.RFC3339),
 		UnselectableDays:           convertTimeMapToProtoMap(currentConfig.UnselectableDays),
+		Timezone:                   currentConfig.Timezone.String(),
 	}
 
 	return result
@@ -246,6 +247,24 @@ func mapToConfigCallbacks(
 		resultCallbacks = append(resultCallbacks,
 			calendarGenerator.ApplyNewOptionsForButtonsTextWrapper(
 				telegramDayButtonFormer.ChangeUnselectableDays(unselectableDays),
+			),
+		)
+	}
+
+	var newTimezone *time.Location
+	var errParseTimezone error
+	if req.GetTimezone().GetTimezone() != "" {
+		newTimezone, errParseTimezone = time.LoadLocation(req.GetTimezone().GetTimezone())
+		if errParseTimezone != nil {
+			return resultCallbacks, fmt.Errorf("parse new timezone error: %v", errParseDAT)
+		}
+	}
+
+	// new timezone may be nil, this is normal, it will be set to UTC
+	if req.GetTimezone().GetForceChoice() || newTimezone != nil {
+		resultCallbacks = append(resultCallbacks,
+			calendarGenerator.ApplyNewOptionsForButtonsTextWrapper(
+				telegramDayButtonFormer.ChangeTimezone(newTimezone),
 			),
 		)
 	}
