@@ -64,14 +64,15 @@ func TestGrpcServerAndClient(t *testing.T) {
 		MonthNames:                 []string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
 		HomeButtonForBeauty:        "🏩",
 		PrefixForCurrentDay:        "",
-		PostfixForCurrentDay:       "",
+		PostfixForCurrentDay:       "🗓",
 		PrefixForNonSelectedDay:    "",
 		PostfixForNonSelectedDay:   "❌",
 		PrefixForPickDay:           "",
 		PostfixForPickDay:          "",
-		UnselectableDaysBeforeTime: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
-		UnselectableDaysAfterTime:  time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
+		UnselectableDaysBeforeTime: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
+		UnselectableDaysAfterTime:  time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
 		UnselectableDays:           map[string]*emptypb.Empty{},
+		Timezone:                   time.UTC.String(),
 	}
 
 	// not protojson.Marshal because https://github.com/golang/protobuf/issues/1351
@@ -89,6 +90,11 @@ func TestGrpcServerAndClient(t *testing.T) {
 	}
 
 	// apply new settings
+	tzEuropeB, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		t.Errorf("at time.LoadLocation for Europe/Berlin error: %v", err)
+		return
+	}
 	requestApplyNewSettings := &telegramCalendarPb.NewSettingsRequest{
 		YearsBackForChoose: &telegramCalendarPb.NewSettingsRequest_YearsBackForChoose{
 			ForceChoice:        false,
@@ -155,6 +161,9 @@ func TestGrpcServerAndClient(t *testing.T) {
 			UnselectableDays: map[string]*emptypb.Empty{
 				`2024-01-02T00:00:00.00Z`: {}},
 		},
+		Timezone: &telegramCalendarPb.NewSettingsRequest_Timezone{
+			Timezone: tzEuropeB.String(),
+		},
 	}
 
 	_, errApplyNewSettings := client.ApplyNewSettings(ctx, requestApplyNewSettings)
@@ -182,11 +191,12 @@ func TestGrpcServerAndClient(t *testing.T) {
 		PostfixForNonSelectedDay:   ":N",
 		PrefixForPickDay:           "P:",
 		PostfixForPickDay:          ":P",
-		UnselectableDaysBeforeTime: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
-		UnselectableDaysAfterTime:  time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC).Format(time.RFC3339),
+		UnselectableDaysBeforeTime: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC).In(tzEuropeB).Format(time.RFC3339),
+		UnselectableDaysAfterTime:  time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC).In(tzEuropeB).Format(time.RFC3339),
 		UnselectableDays: map[string]*emptypb.Empty{
-			time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC).Format(time.RFC3339): {},
+			time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC).In(tzEuropeB).Format(time.RFC3339): {},
 		},
+		Timezone: tzEuropeB.String(),
 	}
 
 	gotCustomJson, errGotCustomJsonMarshal := json.Marshal(customConfig)
@@ -219,7 +229,7 @@ func testGenerateCalendar(ctx context.Context, t *testing.T, client telegramCale
 	if errGotFirstGenResponseMarshal != nil {
 		t.Fatalf("failed to marshal got settings: %v", errGotFirstGenResponseMarshal)
 	}
-	expectedFirstGenResponse := `{"inline_keyboard_markup":{"inline_keyboard":[{"buttons":[{"text":"«","callback_data":"calendar/pry_00.01.2025"},{"text":"\u003c","callback_data":"calendar/prm_00.01.2025"},{"text":"Jan","callback_data":"calendar/sem_00.01.2025"},{"text":"🏩","callback_data":"calendar/sdn_00.01.2025"},{"text":"2025","callback_data":"calendar/sey_00.01.2025"},{"text":"\u003e","callback_data":"calendar/nem_00.01.2025"},{"text":"»","callback_data":"calendar/ney_00.01.2025"}]},{"buttons":[{"text":"Mo","callback_data":"calendar/sdn_00.01.2025"},{"text":"Tu","callback_data":"calendar/sdn_00.01.2025"},{"text":"We","callback_data":"calendar/sdn_00.01.2025"},{"text":"Th","callback_data":"calendar/sdn_00.01.2025"},{"text":"Fr","callback_data":"calendar/sdn_00.01.2025"},{"text":"Sa","callback_data":"calendar/sdn_00.01.2025"},{"text":"Su","callback_data":"calendar/sdn_00.01.2025"}]},{"buttons":[{"text":" ","callback_data":"calendar/sdn_00.01.2025"},{"text":" ","callback_data":"calendar/sdn_00.01.2025"},{"text":"1","callback_data":"calendar/sed_01.01.2025"},{"text":"2","callback_data":"calendar/sed_02.01.2025"},{"text":"3","callback_data":"calendar/sed_03.01.2025"},{"text":"4","callback_data":"calendar/sed_04.01.2025"},{"text":"5","callback_data":"calendar/sed_05.01.2025"}]},{"buttons":[{"text":"6","callback_data":"calendar/sed_06.01.2025"},{"text":"7","callback_data":"calendar/sed_07.01.2025"},{"text":"8","callback_data":"calendar/sed_08.01.2025"},{"text":"9","callback_data":"calendar/sed_09.01.2025"},{"text":"10","callback_data":"calendar/sed_10.01.2025"},{"text":"11","callback_data":"calendar/sed_11.01.2025"},{"text":"12","callback_data":"calendar/sed_12.01.2025"}]},{"buttons":[{"text":"13","callback_data":"calendar/sed_13.01.2025"},{"text":"14","callback_data":"calendar/sed_14.01.2025"},{"text":"15","callback_data":"calendar/sed_15.01.2025"},{"text":"16","callback_data":"calendar/sed_16.01.2025"},{"text":"17","callback_data":"calendar/sed_17.01.2025"},{"text":"18","callback_data":"calendar/sed_18.01.2025"},{"text":"19","callback_data":"calendar/sed_19.01.2025"}]},{"buttons":[{"text":"20","callback_data":"calendar/sed_20.01.2025"},{"text":"21","callback_data":"calendar/sed_21.01.2025"},{"text":"22","callback_data":"calendar/sed_22.01.2025"},{"text":"23","callback_data":"calendar/sed_23.01.2025"},{"text":"24","callback_data":"calendar/sed_24.01.2025"},{"text":"25","callback_data":"calendar/sed_25.01.2025"},{"text":"26","callback_data":"calendar/sed_26.01.2025"}]},{"buttons":[{"text":"27","callback_data":"calendar/sed_27.01.2025"},{"text":"28","callback_data":"calendar/sed_28.01.2025"},{"text":"29","callback_data":"calendar/sed_29.01.2025"},{"text":"30","callback_data":"calendar/sed_30.01.2025"},{"text":"31","callback_data":"calendar/sed_31.01.2025"},{"text":" ","callback_data":"calendar/sdn_00.01.2025"},{"text":" ","callback_data":"calendar/sdn_00.01.2025"}]}]},"is_unselectable_day":false}`
+	expectedFirstGenResponse := `{"inline_keyboard_markup":{"inline_keyboard":[{"buttons":[{"text":"«","callback_data":"calendar/pry_00.01.2025"},{"text":"\u003c","callback_data":"calendar/prm_00.01.2025"},{"text":"Jan","callback_data":"calendar/sem_00.01.2025"},{"text":"🏩","callback_data":"calendar/sdn_00.01.2025"},{"text":"2025","callback_data":"calendar/sey_00.01.2025"},{"text":"\u003e","callback_data":"calendar/nem_00.01.2025"},{"text":"»","callback_data":"calendar/ney_00.01.2025"}]},{"buttons":[{"text":"Mo","callback_data":"calendar/sdn_00.01.2025"},{"text":"Tu","callback_data":"calendar/sdn_00.01.2025"},{"text":"We","callback_data":"calendar/sdn_00.01.2025"},{"text":"Th","callback_data":"calendar/sdn_00.01.2025"},{"text":"Fr","callback_data":"calendar/sdn_00.01.2025"},{"text":"Sa","callback_data":"calendar/sdn_00.01.2025"},{"text":"Su","callback_data":"calendar/sdn_00.01.2025"}]},{"buttons":[{"text":" ","callback_data":"calendar/sdn_00.01.2025"},{"text":" ","callback_data":"calendar/sdn_00.01.2025"},{"text":"1🗓","callback_data":"calendar/sed_01.01.2025"},{"text":"2","callback_data":"calendar/sed_02.01.2025"},{"text":"3","callback_data":"calendar/sed_03.01.2025"},{"text":"4","callback_data":"calendar/sed_04.01.2025"},{"text":"5","callback_data":"calendar/sed_05.01.2025"}]},{"buttons":[{"text":"6","callback_data":"calendar/sed_06.01.2025"},{"text":"7","callback_data":"calendar/sed_07.01.2025"},{"text":"8","callback_data":"calendar/sed_08.01.2025"},{"text":"9","callback_data":"calendar/sed_09.01.2025"},{"text":"10","callback_data":"calendar/sed_10.01.2025"},{"text":"11","callback_data":"calendar/sed_11.01.2025"},{"text":"12","callback_data":"calendar/sed_12.01.2025"}]},{"buttons":[{"text":"13","callback_data":"calendar/sed_13.01.2025"},{"text":"14","callback_data":"calendar/sed_14.01.2025"},{"text":"15","callback_data":"calendar/sed_15.01.2025"},{"text":"16","callback_data":"calendar/sed_16.01.2025"},{"text":"17","callback_data":"calendar/sed_17.01.2025"},{"text":"18","callback_data":"calendar/sed_18.01.2025"},{"text":"19","callback_data":"calendar/sed_19.01.2025"}]},{"buttons":[{"text":"20","callback_data":"calendar/sed_20.01.2025"},{"text":"21","callback_data":"calendar/sed_21.01.2025"},{"text":"22","callback_data":"calendar/sed_22.01.2025"},{"text":"23","callback_data":"calendar/sed_23.01.2025"},{"text":"24","callback_data":"calendar/sed_24.01.2025"},{"text":"25","callback_data":"calendar/sed_25.01.2025"},{"text":"26","callback_data":"calendar/sed_26.01.2025"}]},{"buttons":[{"text":"27","callback_data":"calendar/sed_27.01.2025"},{"text":"28","callback_data":"calendar/sed_28.01.2025"},{"text":"29","callback_data":"calendar/sed_29.01.2025"},{"text":"30","callback_data":"calendar/sed_30.01.2025"},{"text":"31","callback_data":"calendar/sed_31.01.2025"},{"text":" ","callback_data":"calendar/sdn_00.01.2025"},{"text":" ","callback_data":"calendar/sdn_00.01.2025"}]}]},"is_unselectable_day":false}` //nolint:lll // ok
 	if string(gotFirstGenResponseRaw) != expectedFirstGenResponse {
 		t.Fatalf("settings mismatch: got %s, want %v", gotFirstGenResponseRaw, expectedFirstGenResponse)
 	}

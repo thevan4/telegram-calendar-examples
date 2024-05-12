@@ -18,8 +18,8 @@ github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee h1:8Iv5m6xEo1NR1Avp
 github.com/savsgio/gotils v0.0.0-20230208104028-c358bd845dee/go.mod h1:qwtSXrKuJh/zsFQ12yEE89xfCrGKK63Rr7ctU/uCo4g=
 github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/thevan4/telegram-calendar v0.0.0-20240510103314-0f972ef55608 h1:m8Fmv6WldC3eAmpslLJcG0//YVjGdHoIgziajBOr7v0=
-github.com/thevan4/telegram-calendar v0.0.0-20240510103314-0f972ef55608/go.mod h1:W2XZ7uOigYoDKQeBG11X3BiHDMpt9feun1c72WKooGU=
+github.com/thevan4/telegram-calendar v1.0.1 h1:27r+5JzXiAIv7NuU+OyGfxRwdViIzcHaFpovDdHNGX4=
+github.com/thevan4/telegram-calendar v1.0.1/go.mod h1:W2XZ7uOigYoDKQeBG11X3BiHDMpt9feun1c72WKooGU=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasthttp v1.47.0 h1:y7moDoxYzMooFpT5aHgNgVOQDrS3qlkfiP9mDtGGK9c=

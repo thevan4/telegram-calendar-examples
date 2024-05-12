@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/mymmrac/telego v0.24.0
-	github.com/thevan4/telegram-calendar v0.0.0-20240510103314-0f972ef55608
+	github.com/thevan4/telegram-calendar v1.0.1
 )
 
 require (

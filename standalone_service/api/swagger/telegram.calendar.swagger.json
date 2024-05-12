@@ -254,6 +254,18 @@
         }
       }
     },
+    "NewSettingsRequestTimezone": {
+      "type": "object",
+      "properties": {
+        "timezone": {
+          "type": "string",
+          "title": "Format IANA (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones column TZ identifier.\nMore information https://data.iana.org/time-zones/tz-link.html"
+        },
+        "forceChoice": {
+          "type": "boolean"
+        }
+      }
+    },
     "NewSettingsRequestUnselectableDays": {
       "type": "object",
       "properties": {
@@ -410,6 +422,10 @@
             "type": "object",
             "properties": {}
           }
+        },
+        "timezone": {
+          "type": "string",
+          "title": "Format IANA (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones column TZ identifier.\nMore information https://data.iana.org/time-zones/tz-link.html"
         }
       }
     },
@@ -469,6 +485,9 @@
         },
         "unselectableDays": {
           "$ref": "#/definitions/NewSettingsRequestUnselectableDays"
+        },
+        "timezone": {
+          "$ref": "#/definitions/NewSettingsRequestTimezone"
         }
       },
       "description": "forced choice - this flag will set the default value (zero, zero date, empty string.\n Without this flag, null values will be ignored."

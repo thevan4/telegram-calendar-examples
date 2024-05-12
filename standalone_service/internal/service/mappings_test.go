@@ -95,7 +95,13 @@ func TestMapGenerateCalendarKeyboardToResponse(t *testing.T) {
 
 func TestMapCurrentConfigToResponse(t *testing.T) {
 	t.Parallel()
-	now := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	tzEuropeB, err := time.LoadLocation("Europe/Berlin")
+	if err != nil {
+		t.Errorf("at time.LoadLocation for Europe/Berlin error: %v", err)
+		return
+	}
+
+	now := time.Date(2024, 1, 1, 0, 0, 0, 0, tzEuropeB)
 
 	type args struct {
 		currentConfig calendarManager.FlatConfig
@@ -125,6 +131,7 @@ func TestMapCurrentConfigToResponse(t *testing.T) {
 					UnselectableDaysBeforeTime: now,
 					UnselectableDaysAfterTime:  now.Add(24 * time.Hour),
 					UnselectableDays:           map[time.Time]struct{}{now: {}},
+					Timezone:                   *tzEuropeB,
 				},
 			},
 			want: &telegramCalendarPb.GetSettingsResponse{
@@ -144,6 +151,7 @@ func TestMapCurrentConfigToResponse(t *testing.T) {
 				UnselectableDaysBeforeTime: now.Format(time.RFC3339),
 				UnselectableDaysAfterTime:  now.Add(24 * time.Hour).Format(time.RFC3339),
 				UnselectableDays:           convertTimeMapToProtoMap(map[time.Time]struct{}{now: {}}),
+				Timezone:                   tzEuropeB.String(),
 			},
 		},
 	}
@@ -377,10 +385,14 @@ func TestMapToConfigCallbacks(t *testing.T) {
 						UnselectableDays: map[string]*emptypb.Empty{
 							time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC).Format(time.RFC3339): {}},
 					},
+					Timezone: &telegramCalendarPb.NewSettingsRequest_Timezone{
+						Timezone:    "Europe/Berlin",
+						ForceChoice: false,
+					},
 				},
 			},
 			wantErr: false,
-			wantLen: 14,
+			wantLen: 15,
 		},
 		{
 			name: "complex test: all with zero values and force set",
@@ -428,10 +440,14 @@ func TestMapToConfigCallbacks(t *testing.T) {
 					UnselectableDays: &telegramCalendarPb.NewSettingsRequest_UnselectableDays{
 						ForceChoice: true,
 					},
+					Timezone: &telegramCalendarPb.NewSettingsRequest_Timezone{
+						Timezone:    "",
+						ForceChoice: true,
+					},
 				},
 			},
 			wantErr: false,
-			wantLen: 12, // not 14, because at days names and months names slices must exist also for zero values
+			wantLen: 13, // not 15, because at days names and months names slices must exist also for zero values
 		},
 		{
 			name: "set some days and mounts names force empty",

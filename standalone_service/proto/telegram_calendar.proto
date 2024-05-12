@@ -72,6 +72,9 @@ message GetSettingsResponse {
   // RFC3339.
   string unselectable_days_after_time = 14;
   map<string, google.protobuf.Empty> unselectable_days = 15;
+  // Format IANA (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones column TZ identifier.
+  // More information https://data.iana.org/time-zones/tz-link.html
+  string timezone = 16;
 }
 
 message NewSettingsRequest {
@@ -143,6 +146,13 @@ message NewSettingsRequest {
     bool force_choice = 2;
   }
 
+  message Timezone {
+    // Format IANA (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones column TZ identifier.
+    // More information https://data.iana.org/time-zones/tz-link.html
+    string timezone = 1;
+    bool force_choice = 2;
+  }
+
   YearsBackForChoose years_back_for_choose = 1;
   YearsForwardForChoose years_forward_for_choose = 2;
   DayNames day_names = 3;
@@ -157,4 +167,5 @@ message NewSettingsRequest {
   UnselectableDaysBeforeTime unselectable_days_before_time = 12;
   UnselectableDaysAfterTime unselectable_days_after_time = 13;
   UnselectableDays unselectable_days = 14;
+  Timezone timezone = 15;
 }
