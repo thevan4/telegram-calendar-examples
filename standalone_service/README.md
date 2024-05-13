@@ -60,17 +60,17 @@ curl -X 'POST' \
 - [proto](https://github.com/thevan4/telegram-calendar-examples/blob/main/standalone_service/proto/telegram_calendar.proto)
 - http examples at swagger, just [run it](https://hub.docker.com/r/thevan/telegram-calendar-standalone-go)! 
 
-#### Codegen
+# Codegen (only for project work, not for depoy)
 ```bash
 make gen
 ```
 
-#### Local build and run
+## Local build and run
 ```bash
 make build-and-run
 ```
 
-#### Docker run
+## Docker run
 ```bash
 make docker-run
 ```
