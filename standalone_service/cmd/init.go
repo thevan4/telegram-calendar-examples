@@ -19,13 +19,13 @@ func init() {
 	grpcPort = os.Getenv("GRPC_PORT")
 	if grpcPort == "" {
 		grpcPort = "50051"
-		logJSON("debug", "grpc port set default: 55555")
+		logJSON("debug", "grpc port set default: 50051")
 	}
 
 	httpPort = os.Getenv("HTTP_PORT")
 	if httpPort == "" {
 		httpPort = "8080"
-		logJSON("debug", "http port set default: 55555")
+		logJSON("debug", "http port set default: 8080")
 	}
 
 	var err error

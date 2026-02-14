@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
-	"github.com/thevan4/telegram-calendar-examples/mymmrac_telego/simplest_example/internal/telegram/utils"
-	pb "github.com/thevan4/telegram-calendar-examples/mymmrac_telego/simplest_example/pkg/telegram-calendar/telegram-calendar-examples/standalone_service" //nolint:lll // ok
+	"github.com/thevan4/telegram-calendar-examples/mymmrac_telego/with_standalone_service_example/internal/telegram/utils"
+	pb "github.com/thevan4/telegram-calendar-examples/mymmrac_telego/with_standalone_service_example/pkg/telegram-calendar/telegram-calendar-examples/standalone_service" //nolint:lll // ok
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -17,17 +18,28 @@ import (
 // CallbackQueryForCalendarWrapper ...
 type CallbackQueryForCalendarWrapper struct {
 	globalCTX             context.Context
+	conn                  *grpc.ClientConn
 	calendarManagerClient pb.CalendarServiceClient
+	cncgrpc               context.CancelFunc
+}
+
+// Close closes the underlying gRPC connection.
+func (cw *CallbackQueryForCalendarWrapper) Close() error {
+	defer cw.cncgrpc()
+
+	if cw.conn != nil {
+		return cw.conn.Close()
+	}
+	return nil
 }
 
 // MustNewClientForStandaloneService ...
-func MustNewClientForStandaloneService(ctx context.Context, addr string) pb.CalendarServiceClient {
+func MustNewClientForStandaloneService(ctx context.Context, addr string) (*grpc.ClientConn, pb.CalendarServiceClient, context.CancelFunc) {
 	if addr == "" {
 		log.Fatal("at MustNewClientForStandaloneService: addr not set")
 	}
 
 	ctxWithDeadLine, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
 
 	conn, err := grpc.DialContext(
 		ctxWithDeadLine,
@@ -35,17 +47,20 @@ func MustNewClientForStandaloneService(ctx context.Context, addr string) pb.Cale
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("cant grpc.DialContext for addr %v, error: %v", addr, err)
+		log.Fatalf("cant grpc.NewClient for addr %v, error: %v", addr, err)
 	}
 
-	return pb.NewCalendarServiceClient(conn)
+	return conn, pb.NewCalendarServiceClient(conn), cancel
 }
 
 // MustNewCallbackQueryForCalendarWrapper ...
 func MustNewCallbackQueryForCalendarWrapper(ctx context.Context, calendarStandaloneServiceAddr string) *CallbackQueryForCalendarWrapper {
-	cmcl := MustNewClientForStandaloneService(ctx, calendarStandaloneServiceAddr)
-	// Bug with timezone definition locally, it is defined as "local", which does not comply with the IANA standard.
-	tz, errParseTimezone := time.LoadLocation("Etc/GMT-3")
+	conn, cmcl, cncgrpc := MustNewClientForStandaloneService(ctx, calendarStandaloneServiceAddr)
+	tzName := os.Getenv("TIMEZONE")
+	if tzName == "" {
+		tzName = "Etc/GMT-3"
+	}
+	tz, errParseTimezone := time.LoadLocation(tzName)
 	if errParseTimezone != nil {
 		log.Fatalf("parse new timezone error: %v", errParseTimezone)
 	}
@@ -75,7 +90,7 @@ func MustNewCallbackQueryForCalendarWrapper(ctx context.Context, calendarStandal
 		log.Fatalf("cant ApplyNewSettings for calendar manager, error: %v", err)
 	}
 
-	cw := &CallbackQueryForCalendarWrapper{calendarManagerClient: cmcl, globalCTX: ctx}
+	cw := &CallbackQueryForCalendarWrapper{calendarManagerClient: cmcl, globalCTX: ctx, conn: conn, cncgrpc: cncgrpc}
 
 	go cw.AtNextMidnightChangeUnselectableDaysBeforeDate(tn)
 	return cw
@@ -89,13 +104,13 @@ func (cw *CallbackQueryForCalendarWrapper) AtNextMidnightChangeUnselectableDaysB
 
 	go time.AfterFunc(duration, func() {
 		prevDay := time.Date(nextMidnight.Year(), nextMidnight.Month(), nextMidnight.Day()-1, 0, 0, 0, 0, nextMidnight.Location())
-		if _, err := cw.calendarManagerClient.ApplyNewSettings(context.Background(), &pb.NewSettingsRequest{
+		if _, err := cw.calendarManagerClient.ApplyNewSettings(cw.globalCTX, &pb.NewSettingsRequest{
 			UnselectableDaysBeforeTime: &pb.NewSettingsRequest_UnselectableDaysBeforeTime{
 				UnselectableDaysBeforeTime: prevDay.Format(time.RFC3339),
 			},
 		}); err != nil {
 			// Retry logic looks good here.
-			fmt.Printf("at AtNextMidnightChangeUnselectableDaysBeforeDate update UnselectableDaysBeforeDate fail: %v", err)
+			log.Printf("at AtNextMidnightChangeUnselectableDaysBeforeDate update UnselectableDaysBeforeDate fail: %v\n", err)
 		}
 
 		cw.AtNextMidnightChangeUnselectableDaysBeforeDate(nextMidnight)
@@ -138,7 +153,7 @@ func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.
 		}
 
 		if _, err := bot.EditMessageReplyMarkup(responseMsg); err != nil {
-			fmt.Printf("got err at bot.EditMessageReplyMarkup(responseMsg): %v", err)
+			log.Printf("got err at bot.EditMessageReplyMarkup(responseMsg): %v\n", err)
 		}
 		return
 	}
@@ -158,7 +173,7 @@ func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.
 	}
 
 	if _, err := bot.EditMessageReplyMarkup(responseMsg); err != nil {
-		fmt.Printf("at CallbackQueryForCalendar at bot.EditMessageReplyMarkup %v", err)
+		log.Printf("at CallbackQueryForCalendar at bot.EditMessageReplyMarkup %v\n", err)
 	}
 }
 

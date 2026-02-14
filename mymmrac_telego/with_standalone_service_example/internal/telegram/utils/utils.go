@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/mymmrac/telego"
 	tu "github.com/mymmrac/telego/telegoutil"
-	"github.com/thevan4/telegram-calendar-examples/mymmrac_telego/simplest_example/internal/telegram/constants"
+	"github.com/thevan4/telegram-calendar-examples/mymmrac_telego/with_standalone_service_example/internal/telegram/constants"
 )
 
 // GetChatID ...

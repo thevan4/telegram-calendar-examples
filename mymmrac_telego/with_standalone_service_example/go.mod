@@ -1,4 +1,4 @@
-module github.com/thevan4/telegram-calendar-examples/mymmrac_telego/simplest_example
+module github.com/thevan4/telegram-calendar-examples/mymmrac_telego/with_standalone_service_example
 
 go 1.22.2
 

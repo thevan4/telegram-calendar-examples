@@ -69,14 +69,14 @@ func startGRPCServer(wg *sync.WaitGroup) *grpc.Server {
 	pb.RegisterCalendarServiceServer(grpcServer, serviceGrpc)
 
 	logJSON("info", "grpc starting at port "+grpcPort)
-	listerGrpc, errTCPListen := net.Listen("tcp", ":"+grpcPort)
-	if errTCPListen != nil {
-		logJSON("fatal", "failed to listen: "+errTCPListen.Error())
+	listerGrpc, err := net.Listen("tcp", ":"+grpcPort)
+	if err != nil {
+		logJSON("fatal", "failed to listen: "+err.Error())
 	}
 	go func() {
 		go waitForServerReady(grpcPort, wg, grpcDialTimeout)
-		if errGrpcServe := grpcServer.Serve(listerGrpc); errGrpcServe != nil {
-			logJSON("fatal", "failed to serve gRPC: "+errGrpcServe.Error())
+		if err := grpcServer.Serve(listerGrpc); err != nil {
+			logJSON("fatal", "failed to serve gRPC: "+err.Error())
 		}
 	}()
 
@@ -90,8 +90,8 @@ func startHTTPServer(ctx context.Context, wg *sync.WaitGroup) *http.Server {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	if errPbRegister := pb.RegisterCalendarServiceHandlerFromEndpoint(ctx, httpMux, ":"+grpcPort, opts); errPbRegister != nil {
-		logJSON("fatal", "failed to register HTTP endpoint: "+errPbRegister.Error())
+	if err := pb.RegisterCalendarServiceHandlerFromEndpoint(ctx, httpMux, ":"+grpcPort, opts); err != nil {
+		logJSON("fatal", "failed to register HTTP endpoint: "+err.Error())
 	}
 	httpServer := &http.Server{
 		Addr:    ":" + httpPort,
@@ -99,9 +99,9 @@ func startHTTPServer(ctx context.Context, wg *sync.WaitGroup) *http.Server {
 	}
 	go func() {
 		go waitForServerReady(httpPort, wg, httpDialTimeout)
-		if errHTTPServe := httpServer.ListenAndServe(); errHTTPServe != nil {
-			if !errors.Is(errHTTPServe, http.ErrServerClosed) {
-				logJSON("fatal", "failed to serve: "+errHTTPServe.Error())
+		if err := httpServer.ListenAndServe(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				logJSON("fatal", "failed to serve: "+err.Error())
 			}
 		}
 	}()

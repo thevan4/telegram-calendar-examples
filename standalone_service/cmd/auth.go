@@ -54,7 +54,9 @@ func authHTTPInterceptor(next http.Handler) http.Handler {
 			authHeader := req.Header.Get("Authorization")
 			token := strings.TrimPrefix(authHeader, "Bearer ")
 			if token != secretBearerToken {
-				http.Error(w, "unauthorized", http.StatusUnauthorized)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte(`{"error":"unauthorized"}`)) //nolint:errcheck // response write
 				return
 			}
 		}

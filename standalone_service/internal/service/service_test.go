@@ -30,12 +30,16 @@ func TestGrpcServerAndClient(t *testing.T) {
 	telegramCalendarPb.RegisterCalendarServiceServer(s, NewTelegramCalendarGRPCService())
 
 	lis := bufconn.Listen(1024 * 1024)
+	errCh := make(chan error, 1)
 	go func() {
-		if err := s.Serve(lis); err != nil {
-			t.Fatalf("server exited with error: %v", err)
-		}
+		errCh <- s.Serve(lis)
 	}()
-	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(bufDialer(lis)), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	t.Cleanup(func() {
+		if err := <-errCh; err != nil {
+			t.Errorf("server exited with error: %v", err)
+		}
+	})
+	conn, err := grpc.NewClient("passthrough:///bufnet", grpc.WithContextDialer(bufDialer(lis)), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}

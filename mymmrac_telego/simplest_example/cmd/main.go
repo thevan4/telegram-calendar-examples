@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +15,9 @@ func main() {
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	botToken := os.Getenv("BOT_TOKEN")
+	if botToken == "" {
+		log.Fatal("BOT_TOKEN environment variable is not set")
+	}
 	botHandler := telego_wrapper.MustNewBotHandler(telego_wrapper.MustNewClient(botToken, telego.WithDefaultDebugLogger()))
 
 	go botHandler.Start()

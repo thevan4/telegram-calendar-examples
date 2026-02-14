@@ -110,7 +110,7 @@ func mapToConfigCallbacks(
 				func(d *telegramCalendarPb.NewSettingsRequest_DayName) string { return d.GetDayName() },
 				req.GetDayNames().GetForceChoice(),
 			); errValidate != nil {
-				return resultCallbacks, fmt.Errorf("validateDays error: %w", err)
+				return resultCallbacks, fmt.Errorf("validateDays error: %w", errValidate)
 			}
 			var dayNames [7]string
 			for i := range dayNames {
@@ -132,7 +132,7 @@ func mapToConfigCallbacks(
 				func(m *telegramCalendarPb.NewSettingsRequest_MonthName) string { return m.GetMonthName() },
 				req.GetMonthNames().GetForceChoice(),
 			); errValidate != nil {
-				return resultCallbacks, fmt.Errorf("validateMonths error: %w", err)
+				return resultCallbacks, fmt.Errorf("validateMonths error: %w", errValidate)
 			}
 			var monthNames [12]string
 			for i := range monthNames {
@@ -222,7 +222,7 @@ func mapToConfigCallbacks(
 	if req.GetUnselectableDaysAfterTime().GetUnselectableDaysAfterTime() != "" {
 		unselectableDaysAfterTime, errParseDAT = time.Parse(time.RFC3339, req.GetUnselectableDaysAfterTime().GetUnselectableDaysAfterTime())
 		if errParseDAT != nil {
-			return resultCallbacks, fmt.Errorf("parse unselectable days before time error: %v", errParseDAT)
+			return resultCallbacks, fmt.Errorf("parse unselectable days after time error: %v", errParseDAT)
 		}
 	}
 

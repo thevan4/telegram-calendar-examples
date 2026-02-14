@@ -80,7 +80,7 @@ func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.
 		}
 
 		if _, err := bot.EditMessageReplyMarkup(responseMsg); err != nil {
-			fmt.Printf("got err at bot.EditMessageReplyMarkup(responseMsg): %v", err)
+			log.Printf("got err at bot.EditMessageReplyMarkup(responseMsg): %v\n", err)
 		}
 		return
 	}
@@ -111,6 +111,6 @@ func (cw *CallbackQueryForCalendarWrapper) CallbackQueryForCalendar(bot *telego.
 
 	_, err = bot.EditMessageReplyMarkup(responseMsg)
 	if err != nil {
-		fmt.Printf("at CallbackQueryForCalendar at bot.EditMessageReplyMarkup %v", err)
+		log.Printf("at CallbackQueryForCalendar at bot.EditMessageReplyMarkup %v\n", err)
 	}
 }
